@@ -1,19 +1,24 @@
-import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import express from 'express';
+import multer from "multer";
+import { loginUser, logoutUser, refreshAccessToken, registerUser } from "../controllers/user.controller.js";
 
-const router=Router()
+const router = express.Router();
 
-router.route("/register").post
-(
+const storage = multer.memoryStorage(); // Use memory storage to get file buffer
+const upload = multer({ storage });
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+
+
+router.route("/register").post(
     upload.fields([
-        {
-            name:"avatar",
-            maxCount:1
-        },
-        {
-            name:"cover image",
-            maxCount:1
-        }
+        { name: "avatar", maxCount: 1 },
+        { name: "coverImage", maxCount: 1 }
     ]),
-    registerUser)
-export default router
+    registerUser
+);
+router.route("/login").post(loginUser)
+
+//secured routes
+router.route("/logout").post(verifyJWT, logoutUser)
+router.route("/refresh-token").post(refreshAccessToken)
+export default router;
